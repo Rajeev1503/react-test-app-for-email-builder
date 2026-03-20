@@ -1,4 +1,7 @@
+import type { Command } from "@react-email-builder/engine";
 import { exportHtml, useEngineStore } from "@react-email-builder/react";
+import type { RenderNodeTypeData } from "./types";
+import type { InsertableNodeType, NodeType } from "../../react-email-builder/packages/core/dist";
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -7,28 +10,26 @@ export const NavBar = () => {
   const selectedNodeId = useEngineStore((state) => state.selectedNodeId);
   const nodes = useEngineStore((state) => state.document.nodes);
   const document = useEngineStore((state) => state.document);
-  const safeDispatch = (action: any) => {
+
+  const safeDispatch = ({type, payload}: {type: "INSERT_NODE", payload:  Omit<Extract<Command, {type: "INSERT_NODE"}>["payload"], "parentId">}) => {
     try {
       if (!selectedNodeId) {
         alert("Please select a node to add an element.");
         return;
       }
 
-      const parentNode = nodes[selectedNodeId];
+      const parentNode = nodes.get(selectedNodeId);
       if (!parentNode) {
         alert("Parent node not found");
         return;
       }
       dispatch({
-        type: action.type,
-        payload: {
-          node: action.payload.node,
-          parent: {
-            id: selectedNodeId,
-            type: parentNode.type as "section" | "row" | "column" | "container",
-          },
-        },
-      });
+        type,
+      payload: {
+        ...payload,
+        parentId: selectedNodeId
+      }
+          });
     } catch (error: any) {
       alert(`Failed to add element: ${error.message}`);
       console.error(error);
@@ -36,18 +37,18 @@ export const NavBar = () => {
   };
 
   const handleAddSection = () => {
-    const sectionId = generateId();
 
-    const sectionNode: any = {
-      id: sectionId,
-      type: "section",
-      styles: {
-        paddingTop: 1,
-        paddingBottom: 1,
-        paddingLeft: 1,
-        paddingRight: 1,
-        backgroundColor: "#999",
-      },
+    const sectionNode = {
+      type: "section" as InsertableNodeType,
+      data: {
+        styles: {
+          paddingTop: 1,
+          paddingBottom: 1,
+          paddingLeft: 1,
+          
+          backgroundColor: "#999",
+        },
+      }
     };
     safeDispatch({
       type: "INSERT_NODE",
@@ -64,15 +65,16 @@ export const NavBar = () => {
     }
 
     const textNode: any = {
-      id: generateId(),
       type: "block",
-      props: {
-        content: "Hello World",
-      },
-      styles: {
-        color: "red",
-      },
-      blockType: "text",
+      data: {
+        props: {
+          content: "Hello World",
+        },
+        styles: {
+          color: "red",
+        },
+        blockType: "text",
+      }
     };
 
     safeDispatch({
@@ -90,22 +92,24 @@ export const NavBar = () => {
     }
 
     const buttonNode: any = {
-      id: generateId(),
       type: "block",
-      props: {
-        label: "Click Me",
-        href: "#",
-      },
-      styles: {
-        backgroundColor: "#007bff",
-        color: "#ffffff",
-        paddingTop: 10,
-        paddingBottom: 10,
-        paddingLeft: 10,
-        paddingRight: 10,
-        borderRadius: 100,
-      },
-      blockType: "button",
+      data: {
+
+        props: {
+          label: "Click Me",
+          href: "#",
+        },
+        styles: {
+          backgroundColor: "#007bff",
+          color: "#ffffff",
+          paddingTop: 10,
+          paddingBottom: 10,
+          paddingLeft: 10,
+          paddingRight: 10,
+          borderRadius: 100,
+        },
+        blockType: "button",
+      }
     };
 
     safeDispatch({
@@ -123,17 +127,19 @@ export const NavBar = () => {
     }
 
     const imageNode: any = {
-      id: generateId(),
       type: "block",
-      props: {
-        src: "https://via.placeholder.com/150",
-        alt: "Placeholder",
-      },
-      styles: {
-        width: "150px",
-        height: "150px",
-      },
-      blockType: "image",
+      data:{
+
+        props: {
+          src: "https://via.placeholder.com/150",
+          alt: "Placeholder",
+        },
+        styles: {
+          width: "150px",
+          height: "150px",
+        },
+        blockType: "image",
+      }
     };
 
     safeDispatch({
@@ -244,9 +250,9 @@ export const NavBar = () => {
         Export html
       </button>
       <div className="ml-auto text-sm font-medium text-gray-700">
-        {selectedNodeId && nodes[selectedNodeId] ? (
+        {selectedNodeId && nodes.get(selectedNodeId) ? (
           <span className="text-blue-600">
-            Selected: {nodes[selectedNodeId]?.type} ({selectedNodeId})
+            Selected: {nodes.get(selectedNodeId)?.type} ({selectedNodeId})
           </span>
         ) : (
           <span className="text-gray-400">No Selection</span>

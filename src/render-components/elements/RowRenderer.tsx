@@ -1,16 +1,10 @@
-import { useEngineStore } from "@react-email-builder/react";
+import type { RenderNodeTypeData } from "../../types";
 import { ElementRenderer } from "../ElementRenderer";
 
-import { EMPTY_ARRAY } from "../../constants";
-
-export const RowRenderer = ({ node }: { node: any }) => {
-  const childrenIds = useEngineStore(
-    (state) => state.document.children[node.id] || EMPTY_ARRAY
-  );
-
+export const RowRenderer = ({ node }: { node: RenderNodeTypeData<"row">})=>{
   return (
-    <div className="flex w-full" style={{ ...node.styles }}>
-      {childrenIds.map((childId) => (
+    <div className="flex w-full" style={{ ...node.data?.styles }}>
+      {node?.children.map((childId:string) => (
         <ElementRenderer key={childId} nodeId={childId} />
       ))}
     </div>

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@react-email-builder/engine':
+        specifier: ../react-email-builder/packages/engine
+        version: link:../react-email-builder/packages/engine
       '@react-email-builder/react':
         specifier: ../react-email-builder/packages/react
         version: link:../react-email-builder/packages/react

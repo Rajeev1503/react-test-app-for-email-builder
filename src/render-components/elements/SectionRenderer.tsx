@@ -1,16 +1,13 @@
-import { useEngineStore } from "@react-email-builder/react";
 import { ElementRenderer } from "../ElementRenderer";
+import type { RenderNodeTypeData } from "../../types";
+import type { NodeId } from "../../../../react-email-builder/packages/core/dist";
+import { useEngineStore } from "@react-email-builder/react";
 
-import { EMPTY_ARRAY } from "../../constants";
-
-export const SectionRenderer = ({ node }: { node: any }) => {
-  const childrenIds = useEngineStore(
-    (state) => state.document.children[node.id] || EMPTY_ARRAY
-  );
-
+export const SectionRenderer  = ({nodeId}: {nodeId: NodeId})=>{
+    const node = useEngineStore((state) => state.document.nodes.get(nodeId)) as RenderNodeTypeData<"section">;
   return (
-    <div style={{ ...node.styles }}>
-      {childrenIds.map((childId) => (
+    <div style={{ ...node.data.styles }}>
+      {node?.children.map((childId:string) => (
         <ElementRenderer key={childId} nodeId={childId} />
       ))}
     </div>

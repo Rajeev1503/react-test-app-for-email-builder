@@ -6,10 +6,11 @@ import { SectionRenderer } from "./elements/SectionRenderer";
 import { RowRenderer } from "./elements/RowRenderer";
 import { ColumnRenderer } from "./elements/ColumnRenderer";
 import { BlockRenderer } from "./elements/BlockRenderer";
+import type { RenderNodeType } from "@react-email-builder/engine";
+
 
 export const ElementRenderer = ({ nodeId }: { nodeId: string }) => {
-  const node = useEngineStore((state) => state.document.nodes[nodeId]);
-
+  const node = useEngineStore((state) => state.document.nodes.get(nodeId)) as RenderNodeType;
   if (!node) return null;
 
   const selectedNodeId = useEngineStore((state) => state.selectedNodeId);
@@ -24,7 +25,7 @@ export const ElementRenderer = ({ nodeId }: { nodeId: string }) => {
       case "container":
         return <ContainerRenderer node={node} />;
       case "section":
-        return <SectionRenderer node={node} />;
+        return <SectionRenderer nodeId={nodeId} />;
       case "row":
         return <RowRenderer node={node} />;
       case "column":
@@ -37,7 +38,7 @@ export const ElementRenderer = ({ nodeId }: { nodeId: string }) => {
   };
 
   const label =
-    node.type === "block" ? `${node.type} (${node.blockType})` : node.type;
+    node.type === "block" ? `${node.type} (${node.data.blockType})` : node.type;
   const isSelected = selectedNodeId === nodeId;
 
   const handleClick = (e: React.MouseEvent) => {

@@ -1,16 +1,10 @@
-import { useEngineStore } from "@react-email-builder/react";
 import { ElementRenderer } from "../ElementRenderer";
+import type { RenderNodeTypeData } from "../../types";
 
-import { EMPTY_ARRAY } from "../../constants";
-
-export const BodyRenderer = ({ node }: { node: any }) => {
-  const childrenIds = useEngineStore(
-    (state) => state.document.children[node.id] || EMPTY_ARRAY
-  );
-
+export const BodyRenderer = ({ node }: { node: RenderNodeTypeData<"body">})=>{
   return (
-    <div className="min-h-full" style={{ ...node.styles }}>
-      {childrenIds.map((childId) => (
+    <div className="min-h-full" style={{ ...node.data.styles }}>
+      {node?.children.map((childId:string) => (
         <ElementRenderer key={childId} nodeId={childId} />
       ))}
     </div>

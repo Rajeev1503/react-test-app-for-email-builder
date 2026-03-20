@@ -1,38 +1,38 @@
-export const BlockRenderer = ({ node }: { node: any }) => {
-  // block doesn't have children usually, it is the leaf.
-  // node.blockType determines content.
+import type { RenderNodeTypeData } from "../../types";
 
-  if (node.blockType === "text") {
+export const BlockRenderer = ({ node }: { node: RenderNodeTypeData<"block">})=>{
+  
+  if (node.data?.blockType === "text") {
     return (
       <div
         className="w-full"
-        style={{ ...node.styles }}
-        dangerouslySetInnerHTML={{ __html: node.content }}
+        style={{ ...node.data?.styles }}
+        dangerouslySetInnerHTML={{ __html: node.data?.props.content }}
       />
     );
   }
 
-  if (node.blockType === "button") {
+  if (node.data.blockType === "button") {
     return (
-      <div className="w-full" style={{ textAlign: node.align || "center" }}>
+      <div className="w-full" style={{ textAlign: node.data.styles?.align || "center" }}>
         <a
-          href={node.href || "#"}
+          href={node.data.props.href || "#"}
           className="inline-block no-underline px-5 py-2.5 rounded text-center"
-          style={{ ...node.styles }}
+          style={{ ...node.data.styles }}
         >
-          {node.label || "Button"}
+          {node.data.props.label || "Button"}
         </a>
       </div>
     );
   }
 
-  if (node.blockType === "image") {
+  if (node.data.blockType === "image") {
     return (
-      <div className="w-full" style={{ textAlign: node.align || "center" }}>
+      <div className="w-full" style={{ textAlign: node.data?.styles?.align || "center" }}>
         <img
-          {...node.props}
+          {...node.data?.props}
           className="max-w-full h-auto inline-block"
-          style={{ ...node.styles }}
+          style={{ ...node.data?.styles }}
         />
       </div>
     );

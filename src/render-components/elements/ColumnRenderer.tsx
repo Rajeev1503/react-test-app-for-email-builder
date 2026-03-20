@@ -1,16 +1,10 @@
-import { useEngineStore } from "@react-email-builder/react";
 import { ElementRenderer } from "../ElementRenderer";
+import type { RenderNodeTypeData } from "../../types";
 
-import { EMPTY_ARRAY } from "../../constants";
-
-export const ColumnRenderer = ({ node }: { node: any }) => {
-  const childrenIds = useEngineStore(
-    (state) => state.document.children[node.id] || EMPTY_ARRAY
-  );
-
+export const ColumnRenderer = ({ node }: { node: RenderNodeTypeData<"column">})=>{
   return (
-    <div className="flex-1" style={{ ...node.styles }}>
-      {childrenIds.map((childId) => (
+    <div className="flex-1" style={{ ...node.data?.styles }}>
+      {node?.children.map((childId:string) => (
         <ElementRenderer key={childId} nodeId={childId} />
       ))}
     </div>
