@@ -1,7 +1,6 @@
 import type { Command } from "@react-email-builder/engine";
 import { exportHtml, useEngineStore } from "@react-email-builder/react";
-import type { RenderNodeTypeData } from "./types";
-import type { InsertableNodeType, NodeType } from "../../react-email-builder/packages/core/dist";
+import type { InsertableNodeType } from "../../react-email-builder/packages/core/dist";
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 

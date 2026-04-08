@@ -1,4 +1,4 @@
-import { useEditorState, useEngineStore } from "@react-email-builder/react";
+import { useEngineStore } from "@react-email-builder/react";
 import { ElementRenderer } from "./render-components/ElementRenderer";
 
 export default function TestEmailBuilder() {
