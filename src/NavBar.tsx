@@ -1,16 +1,40 @@
 import type { Command } from "@react-email-builder/engine";
-import { exportHtml, useEngineStore } from "@react-email-builder/react";
+import { exportHtml, useEngineStore, useDispatch } from "@react-email-builder/react";
 import type { InsertableNodeType } from "../../react-email-builder/packages/core/dist";
+import { Eye, EyeOff, Layers, Rows, Columns, Type, MousePointerClick, Image, Download, Sun, Moon } from "lucide-react";
+import { useState } from "react";
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
-export const NavBar = () => {
-  const dispatch = useEngineStore((state) => state.dispatch);
+export const NavBar = ({
+  isPreviewMode,
+  setIsPreviewMode,
+}: {
+  isPreviewMode: boolean;
+  setIsPreviewMode: (val: boolean) => void;
+}) => {
+  const dispatch = useDispatch();
   const selectedNodeId = useEngineStore((state) => state.selectedNodeId);
   const nodes = useEngineStore((state) => state.document.nodes);
   const document = useEngineStore((state) => state.document);
 
-  const safeDispatch = ({type, payload}: {type: "INSERT_NODE", payload:  Omit<Extract<Command, {type: "INSERT_NODE"}>["payload"], "parentId">}) => {
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => typeof window !== "undefined" && window.document.documentElement.classList.contains("dark")
+  );
+
+  const toggleDarkMode = () => {
+    const nextDark = !isDarkMode;
+    setIsDarkMode(nextDark);
+    if (typeof window !== "undefined") {
+      if (nextDark) {
+        window.document.documentElement.classList.add("dark");
+      } else {
+        window.document.documentElement.classList.remove("dark");
+      }
+    }
+  };
+
+  const safeDispatch = ({ type, payload }: { type: "INSERT_NODE", payload: Omit<Extract<Command, { type: "INSERT_NODE" }>["payload"], "parentId"> }) => {
     try {
       if (!selectedNodeId) {
         alert("Please select a node to add an element.");
@@ -24,11 +48,11 @@ export const NavBar = () => {
       }
       dispatch({
         type,
-      payload: {
-        ...payload,
-        parentId: selectedNodeId
-      }
-          });
+        payload: {
+          ...payload,
+          parentId: selectedNodeId
+        }
+      });
     } catch (error: any) {
       alert(`Failed to add element: ${error.message}`);
       console.error(error);
@@ -44,7 +68,7 @@ export const NavBar = () => {
           paddingTop: 1,
           paddingBottom: 1,
           paddingLeft: 1,
-          
+
           backgroundColor: "#999",
         },
       }
@@ -127,7 +151,7 @@ export const NavBar = () => {
 
     const imageNode: any = {
       type: "block",
-      data:{
+      data: {
 
         props: {
           src: "https://via.placeholder.com/150",
@@ -204,57 +228,134 @@ export const NavBar = () => {
     console.log(html);
   };
 
+  // const { isAIEnabled, setIsAIEnabled } = useAgent();
+
   return (
-    <div className="p-2 border-b border-gray-300 mb-5 flex gap-2 flex-wrap items-center bg-white shadow-sm">
-      <button
-        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors cursor-pointer"
-        onClick={handleAddSection}
+    <div className="p-2 border-b border-appborder flex gap-2 items-center bg-headerbg text-apptext shadow-sm select-none w-full">
+      {/* Title */}
+      {/* <span className="text-sm font-bold text-apptext mr-2 tracking-wide uppercase">EmailBuilder</span> */}
+
+      {/* <div className="w-px h-5 bg-appborder mx-1" /> */}
+
+      {/* AI Mode Toggle */}
+      {/* <button
+        className={`p-2 rounded transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold shadow-sm ${
+          isAIEnabled
+            ? "bg-purple-600 text-white hover:bg-purple-700"
+            : "bg-panelbg text-apptext hover:bg-appbg border border-appborder"
+        }`}
+        onClick={() => setIsAIEnabled(!isAIEnabled)}
+        title={isAIEnabled ? "Disable AI Assistant" : "Enable AI Assistant"}
       >
-        Add Section
-      </button>
+        <Sparkles className="w-4 h-4" />
+        <span>{isAIEnabled ? "AI Active" : "AI Mode"}</span>
+      </button> */}
+
+      {/* <div className="w-px h-5 bg-appborder mx-1" /> */}
+
+      {/* Preview Toggle */}
       <button
-        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors cursor-pointer"
-        onClick={handleAddRow}
+        className={`p-2 rounded transition-all cursor-pointer border shadow-sm ${isPreviewMode
+          ? "bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700"
+          : "bg-panelbg border-appborder text-apptext hover:bg-appbg"
+          }`}
+        onClick={() => setIsPreviewMode(!isPreviewMode)}
+        title={isPreviewMode ? "Switch to Editor Mode" : "Switch to Preview Mode"}
       >
-        Add Row
+        {isPreviewMode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
       </button>
+
+      <div className="w-px h-5 bg-appborder mx-1" />
+
+      {/* Theme Toggle */}
       <button
-        className="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors cursor-pointer"
-        onClick={handleAddColumn}
+        className="p-2 rounded transition-all cursor-pointer border border-appborder bg-panelbg text-apptext hover:bg-appbg shadow-sm flex items-center justify-center"
+        onClick={toggleDarkMode}
+        title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
       >
-        Add Column
+        {isDarkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-apptext" />}
       </button>
+
+      <div className="w-px h-5 bg-appborder mx-1" />
+
+      {/* Mutation Buttons Group */}
+      <div className="flex items-center gap-1 bg-appbg p-1 border border-appborder rounded">
+        <button
+          className="p-1.5 text-apptext hover:bg-panelbg hover:text-blue-600 rounded transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={handleAddSection}
+          disabled={isPreviewMode}
+          title="Add Section (Select Container)"
+        >
+          <Layers className="w-4 h-4" />
+        </button>
+        <button
+          className="p-1.5 text-apptext hover:bg-panelbg hover:text-green-600 rounded transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={handleAddRow}
+          disabled={isPreviewMode}
+          title="Add Row (Select Section)"
+        >
+          <Rows className="w-4 h-4" />
+        </button>
+        <button
+          className="p-1.5 text-apptext hover:bg-panelbg hover:text-purple-600 rounded transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={handleAddColumn}
+          disabled={isPreviewMode}
+          title="Add Column (Select Row)"
+        >
+          <Columns className="w-4 h-4" />
+        </button>
+
+        <div className="w-px h-4 bg-appborder mx-1" />
+
+        <button
+          className="p-1.5 text-apptext hover:bg-panelbg hover:text-indigo-600 rounded transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={handleAddText}
+          disabled={isPreviewMode}
+          title="Add Text Block (Select Column)"
+        >
+          <Type className="w-4 h-4" />
+        </button>
+        <button
+          className="p-1.5 text-apptext hover:bg-panelbg hover:text-indigo-650 rounded transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={handleAddButton}
+          disabled={isPreviewMode}
+          title="Add Button Block (Select Column)"
+        >
+          <MousePointerClick className="w-4 h-4" />
+        </button>
+        <button
+          className="p-1.5 text-apptext hover:bg-panelbg hover:text-pink-600 rounded transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={handleAddImage}
+          disabled={isPreviewMode}
+          title="Add Image Block (Select Column)"
+        >
+          <Image className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="w-px h-5 bg-appborder mx-1" />
+
+      {/* Export HTML */}
       <button
-        className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors cursor-pointer"
-        onClick={handleAddText}
-      >
-        Add Text
-      </button>
-      <button
-        className="px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition-colors cursor-pointer"
-        onClick={handleAddButton}
-      >
-        Add Button
-      </button>
-      <button
-        className="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors cursor-pointer"
-        onClick={handleAddImage}
-      >
-        Add Image
-      </button>
-      <button
-        className="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 transition-colors cursor-pointer"
+        className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded transition-all shadow-sm cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
         onClick={handleExportHtml}
+        title="Export HTML"
       >
-        Export html
+        <Download className="w-4 h-4" />
+        <span>Export</span>
       </button>
-      <div className="ml-auto text-sm font-medium text-gray-700">
+
+      {/* Selected Node Status Badge */}
+      <div className="ml-auto text-xs font-semibold text-apptext flex items-center gap-1.5">
         {selectedNodeId && nodes.get(selectedNodeId) ? (
-          <span className="text-blue-600">
-            Selected: {nodes.get(selectedNodeId)?.type} ({selectedNodeId})
+          <span className="px-2 py-1 bg-panelbg border border-appborder text-apptext rounded flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+            Selected: <span className="font-mono text-[10px] bg-headerbg px-1 py-0.5 rounded">{nodes.get(selectedNodeId)?.type}</span>
           </span>
         ) : (
-          <span className="text-gray-400">No Selection</span>
+          <span className="px-2 py-1 bg-headerbg border border-appborder text-mutedtext rounded">
+            No Selection
+          </span>
         )}
       </div>
     </div>

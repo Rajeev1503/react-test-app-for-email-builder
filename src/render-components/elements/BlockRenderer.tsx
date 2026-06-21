@@ -1,4 +1,5 @@
 import type { RenderNodeTypeData } from "../../types";
+import { mapStylesToCss } from "../../utils/styleMapper";
 
 export const BlockRenderer = ({ node }: { node: RenderNodeTypeData<"block">})=>{
   
@@ -6,7 +7,7 @@ export const BlockRenderer = ({ node }: { node: RenderNodeTypeData<"block">})=>{
     return (
       <div
         className="w-full"
-        style={{ ...node.data?.styles }}
+        style={mapStylesToCss(node.data?.styles)}
         dangerouslySetInnerHTML={{ __html: node.data?.props.content }}
       />
     );
@@ -18,7 +19,7 @@ export const BlockRenderer = ({ node }: { node: RenderNodeTypeData<"block">})=>{
         <a
           href={node.data.props.href || "#"}
           className="inline-block no-underline px-5 py-2.5 rounded text-center"
-          style={{ ...node.data.styles }}
+          style={mapStylesToCss(node.data.styles)}
         >
           {node.data.props.label || "Button"}
         </a>
@@ -32,7 +33,7 @@ export const BlockRenderer = ({ node }: { node: RenderNodeTypeData<"block">})=>{
         <img
           {...node.data?.props}
           className="max-w-full h-auto inline-block"
-          style={{ ...node.data?.styles }}
+          style={mapStylesToCss(node.data?.styles)}
         />
       </div>
     );

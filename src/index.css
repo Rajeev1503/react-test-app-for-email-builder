@@ -1,1 +1,28 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-appbg: #f8fafc;
+  --color-panelbg: #ffffff;
+  --color-headerbg: #f1f5f9;
+  --color-apptext: #0f172a;
+  --color-mutedtext: #64748b;
+  --color-appborder: #cbd5e1;
+  --color-mutedborder: #e2e8f0;
+}
+
+.dark {
+  --color-appbg: #0f172a;
+  --color-panelbg: #1e293b;
+  --color-headerbg: #0f172a;
+  --color-apptext: #f8fafc;
+  --color-mutedtext: #94a3b8;
+  --color-appborder: #334155;
+  --color-mutedborder: #1e293b;
+}
+
+@source "../../react-email-builder/packages/react/src";
+
+#root {
+    padding: 0 !important;
+}

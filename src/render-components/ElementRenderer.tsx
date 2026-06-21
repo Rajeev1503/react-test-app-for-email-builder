@@ -9,7 +9,7 @@ import { BlockRenderer } from "./elements/BlockRenderer";
 import type { RenderNodeType } from "@react-email-builder/engine";
 
 
-export const ElementRenderer = ({ nodeId }: { nodeId: string }) => {
+export const ElementRenderer = ({ nodeId, isPreviewMode }: { nodeId: string; isPreviewMode?: boolean }) => {
   const node = useEngineStore((state) => state.document.nodes.get(nodeId)) as RenderNodeType;
   if (!node) return null;
 
@@ -19,17 +19,17 @@ export const ElementRenderer = ({ nodeId }: { nodeId: string }) => {
   const getRenderer = () => {
     switch (node.type) {
       case "html":
-        return <HtmlRenderer node={node} />;
+        return <HtmlRenderer node={node} isPreviewMode={isPreviewMode} />;
       case "body":
-        return <BodyRenderer node={node} />;
+        return <BodyRenderer node={node} isPreviewMode={isPreviewMode} />;
       case "container":
-        return <ContainerRenderer node={node} />;
+        return <ContainerRenderer node={node} isPreviewMode={isPreviewMode} />;
       case "section":
-        return <SectionRenderer nodeId={nodeId} />;
+        return <SectionRenderer nodeId={nodeId} isPreviewMode={isPreviewMode} />;
       case "row":
-        return <RowRenderer node={node} />;
+        return <RowRenderer node={node} isPreviewMode={isPreviewMode} />;
       case "column":
-        return <ColumnRenderer node={node} />;
+        return <ColumnRenderer node={node} isPreviewMode={isPreviewMode} />;
       case "block":
         return <BlockRenderer node={node} />;
       default:
@@ -42,9 +42,18 @@ export const ElementRenderer = ({ nodeId }: { nodeId: string }) => {
   const isSelected = selectedNodeId === nodeId;
 
   const handleClick = (e: React.MouseEvent) => {
+    if (isPreviewMode) return;
     e.stopPropagation();
     setSelectedNodeId(nodeId);
   };
+
+  if (isPreviewMode) {
+    return (
+      <div onClick={handleClick} className="w-full">
+        {getRenderer()}
+      </div>
+    );
+  }
 
   return (
     <div
