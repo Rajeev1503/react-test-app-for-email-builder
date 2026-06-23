@@ -2,27 +2,79 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-appbg: #f8fafc;
-  --color-panelbg: #ffffff;
+  --color-appbg: #ffffff;
+  --color-panelbg: #f8fafc;
   --color-headerbg: #f1f5f9;
-  --color-apptext: #0f172a;
+  --color-apptext: #1c1c1c;
   --color-mutedtext: #64748b;
   --color-appborder: #cbd5e1;
   --color-mutedborder: #e2e8f0;
+  --color-accent: #25aeba;
+  --color-accent-hover: #1e8f9b;
 }
 
 .dark {
-  --color-appbg: #0f172a;
-  --color-panelbg: #1e293b;
-  --color-headerbg: #0f172a;
-  --color-apptext: #f8fafc;
-  --color-mutedtext: #94a3b8;
-  --color-appborder: #334155;
-  --color-mutedborder: #1e293b;
+  --color-appbg: #1c1c1c;
+  --color-panelbg: #121212;
+  --color-headerbg: #181818;
+  --color-apptext: #f3f4f6;
+  --color-mutedtext: #9ca3af;
+  --color-appborder: #2d2d2d;
+  --color-mutedborder: #1a1a1a;
 }
 
 @source "../../react-email-builder/packages/react/src";
 
 #root {
     padding: 0 !important;
+    background-color: var(--color-appbg);
+    color: var(--color-apptext);
+    min-height: 100vh;
+}
+
+:root {
+  background-color: #ffffff;
+  color: #1c1c1c;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+body {
+  background-color: #ffffff;
+  color: #1c1c1c;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dark {
+  background-color: #1c1c1c;
+  color: #f3f4f6;
+}
+
+.dark body {
+  background-color: #1c1c1c;
+  color: #f3f4f6;
+}
+
+/* Primary Button Styling */
+.btn-primary {
+  background-color: #1c1c1c !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  border: 1px solid var(--color-appborder) !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: #333333 !important;
+  box-shadow: 0 0 10px rgba(37, 174, 186, 0.4);
+}
+
+.dark .btn-primary {
+  background-color: #ffffff !important;
+  color: #1c1c1c !important;
+  border: 1px solid var(--color-appborder) !important;
+}
+
+.dark .btn-primary:hover {
+  background-color: #f3f4f6 !important;
+  box-shadow: 0 0 10px rgba(37, 174, 186, 0.4);
 }

@@ -1,19 +1,18 @@
 import "./App.css";
 import { useState } from "react";
-import { EditorProvider } from "@react-email-builder/react";
+import { EditorProvider, InspectorPanel, EmailCanvas } from "@react-email-builder/react";
 import { NavBar } from "./NavBar";
-import Render from "./render";
-import { PropertiesPanel } from "./PropertiesPanel";
-import { AgentProvider, AIChatComponent, ChatPanel } from "@react-email-builder/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { AgentProvider, ChatPanel } from "@react-email-builder/react";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 
 function App() {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [deviceSize, setDeviceSize] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
 
   return (
-    <AgentProvider geminiApiKey={import.meta.env.VITE_GEMINI_API_KEY} geminiModel="gemini-2.5-flash-lite">
+    <AgentProvider inlineNodeAI={true} geminiApiKey={import.meta.env.VITE_GEMINI_API_KEY} geminiModel="gemini-2.5-flash-lite">
       <EditorProvider>
         <div className="flex h-screen w-full relative overflow-hidden bg-appbg text-apptext">
           
@@ -22,9 +21,9 @@ function App() {
             <ChatPanel
               style={{ borderRightWidth: '2px' }}
               classes={{
-                header: "bg-emerald-550/10 border-emerald-500/20",
-                messageUserBubble: "bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-teal-500/10",
-                starterPromptButton: "hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400",
+                header: "bg-accent/5 border-accent/20",
+                messageUserBubble: "bg-accent text-white border-accent/10",
+                starterPromptButton: "hover:border-accent hover:text-accent",
               }}
               styles={{
                 headerTitleText: { letterSpacing: '0.05em' },
@@ -33,7 +32,7 @@ function App() {
           </div>
 
           {/* Middle Pane: Builder Canvas */}
-          <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+          <div className="flex-1 flex flex-col h-full overflow-hidden relative">
             
             {/* Left Panel Toggle Button */}
             <button
@@ -53,23 +52,53 @@ function App() {
               {rightOpen ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
 
-            <NavBar isPreviewMode={isPreviewMode} setIsPreviewMode={setIsPreviewMode} />
-            <div className="flex-1 overflow-auto bg-gray-100 p-5 flex justify-center relative">
-              <Render isPreviewMode={isPreviewMode} />
+            <NavBar
+              isPreviewMode={isPreviewMode}
+              setIsPreviewMode={setIsPreviewMode}
+              deviceSize={deviceSize}
+              setDeviceSize={setDeviceSize}
+            />
+            {/* Canvas area: relative wrapper + absolutely positioned scrollable canvas */}
+            <div className="flex-1 min-h-0 relative">
+              <div className="absolute inset-0 overflow-y-auto">
+                <EmailCanvas isPreviewMode={isPreviewMode} deviceSize={deviceSize} />
+              </div>
             </div>
           </div>
 
-          {/* Right Pane: Properties Panel */}
+          {/* Right Pane: Inspector Panel with Composable Tabs & Plugin API */}
           <div className={`transition-all duration-300 shrink-0 border-l border-appborder flex flex-col bg-panelbg overflow-hidden h-full ${rightOpen ? "w-[320px] md:w-1/4" : "w-0 border-l-0"}`}>
-            <PropertiesPanel />
+            <InspectorPanel
+              tabs={["properties", "blocks", "layouts", "outline", "templates"]}
+              customTabs={[
+                {
+                  id: "custom-plugin",
+                  label: "Custom",
+                  icon: <Sparkles className="w-3.5 h-3.5 text-[#25aeba]" />,
+                  render: ({ selectedNodeId, node }) => (
+                    <div className="p-4 space-y-3">
+                      <div className="p-3 bg-headerbg border border-appborder rounded-lg">
+                        <span className="block text-[10px] font-extrabold text-[#25aeba] uppercase tracking-wider mb-1">Custom Plugin Tab</span>
+                        <p className="text-xs text-mutedtext leading-relaxed font-light">
+                          This tab is injected dynamically as a plugin via the composed API!
+                        </p>
+                      </div>
+                      <div className="p-3 bg-panelbg border border-appborder rounded-lg text-xs space-y-2">
+                        <span className="font-bold block text-apptext">Selected Element Info:</span>
+                        <p className="font-mono text-[10px] bg-headerbg p-1.5 rounded truncate text-mutedtext">
+                          ID: {selectedNodeId || "None Selected"}
+                        </p>
+                        <p className="font-mono text-[10px] bg-headerbg p-1.5 rounded truncate text-mutedtext">
+                          Type: {node?.type || "None Selected"}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                }
+              ]}
+            />
           </div>
 
-          <AIChatComponent
-            classes={{
-              root: "border-2 border-purple-550/25 shadow-[0_20px_50px_rgba(147,51,234,0.15)]",
-              header: "border-purple-100/50 dark:border-purple-950/50",
-            }}
-          />
         </div>
       </EditorProvider>
     </AgentProvider>
