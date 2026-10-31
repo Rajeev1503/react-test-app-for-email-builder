@@ -6,13 +6,15 @@ import { useEngineStore, useExportHtml } from "@react-email-builder/react";
 export function LabBridge() {
   const document = useEngineStore((s) => s.document);
   const exportHtml = useExportHtml();
+  const setSelectedNodeId = useEngineStore((s) => s.setSelectedNodeId);
 
   useEffect(() => {
     window.__lab = {
       document: () => serialize(document),
       exportHtml: () => exportHtml(document),
+      select: setSelectedNodeId,
     };
-  }, [document, exportHtml]);
+  }, [document, exportHtml, setSelectedNodeId]);
 
   return null;
 }
