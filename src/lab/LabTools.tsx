@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { serialize } from "@react-email-builder/core";
-import { useEngineStore, useExportHtml } from "@react-email-builder/react";
+import { exportPlainText, useEngineStore, useExportHtml } from "@react-email-builder/react";
 
 /** Lets Playwright read the document and the real export. */
 export function LabBridge() {
@@ -15,6 +15,8 @@ export function LabBridge() {
       exportHtml: () => exportHtml(document),
       select: setSelectedNodeId,
       undo,
+      exportFor: (mergeSyntax, mergeData) => exportHtml(document, { mergeSyntax, mergeData }),
+      plainText: () => exportPlainText(document),
     };
   }, [document, exportHtml, setSelectedNodeId, undo]);
 

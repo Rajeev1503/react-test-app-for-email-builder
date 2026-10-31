@@ -18,6 +18,7 @@ import { DndProvider, dndCanvasPlugin } from "@react-email-builder/react/dnd";
 // The starter templates are their own package now — 1793 lines of document data
 // that used to be unconditional bundle weight.
 import { templateManifest } from "@react-email-builder/templates";
+import { RichTextProvider } from "@react-email-builder/react/rich-text";
 import { NavBar } from "./NavBar";
 import { readLabConfig, loadScenario } from "./lab/scenarios";
 import { createLabProvider } from "./lab/fakeAi";
@@ -69,6 +70,12 @@ const templatesTab = templatesTabWith(templateManifest);
 
 const allOverlays = [...aiCanvasPlugin.overlays, ...dndCanvasPlugin.overlays];
 
+const LAB_MERGE_TAGS = [
+  { key: "first_name", label: "First name", sample: "Sam" },
+  { key: "company", label: "Company", sample: "Acme" },
+  { key: "unsubscribe_url", label: "Unsubscribe link", sample: "https://example.com/unsubscribe" },
+];
+
 const SAVE_LABELS = {
   idle: "",
   unsaved: "Unsaved changes",
@@ -116,6 +123,7 @@ function App() {
       initialDocument={scenario.document}
       blocks={scenario.blocks}
       assets={labAssets}
+      mergeTags={LAB_MERGE_TAGS}
     >
       <AgentPlugin
         inlineNodeAI={true}
@@ -126,6 +134,7 @@ function App() {
       {/* History restores the last saved email on load, which would replace a scenario. */}
       {!lab.scenario && <HistoryPlugin />}
       <LabBridge />
+      <RichTextProvider>
       <DndProvider>
         <div className="flex h-screen w-full relative overflow-hidden bg-appbg text-apptext">
 
@@ -180,13 +189,14 @@ function App() {
           {/* Right Pane: Inspector Panel with Composable Tabs & Plugin API */}
           <div className={`transition-all duration-300 shrink-0 border-l border-appborder flex flex-col bg-panelbg overflow-hidden h-full ${rightOpen ? "w-[320px] md:w-1/4" : "w-0 border-l-0"}`}>
             <InspectorPanel
-              tabs={["properties", "blocks", "layouts", "outline"]}
+              tabs={["properties", "blocks", "layouts", "saved", "outline"]}
               customTabs={[historyTab, templatesTab, customPluginTab]}
             />
           </div>
 
         </div>
       </DndProvider>
+      </RichTextProvider>
     </EmailProvider>
   );
 }

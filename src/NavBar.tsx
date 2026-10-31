@@ -1,4 +1,4 @@
-import { exportHtml, useEngineStore, useTheme } from "@react-email-builder/react";
+import { exportHtml, exportPlainText, useEngineStore, useTheme } from "@react-email-builder/react";
 // History persistence ships from its own entry point.
 import { useTemplateHistory } from "@react-email-builder/react/history";
 import { Eye, EyeOff, Sun, Moon, Monitor, Tablet, Smartphone, Clipboard, Check, Trash2 } from "lucide-react";
@@ -46,7 +46,7 @@ export const NavBar = ({
     try {
       const html = await exportHtml(document);
       const htmlBlob = new Blob([html], { type: "text/html" });
-      const textBlob = new Blob([html], { type: "text/plain" });
+      const textBlob = new Blob([exportPlainText(document)], { type: "text/plain" });
       const data = [new ClipboardItem({ "text/html": htmlBlob, "text/plain": textBlob })];
       await navigator.clipboard.write(data);
       setCopied(true);
