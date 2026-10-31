@@ -6,11 +6,11 @@
   --color-panelbg: #f8fafc;
   --color-headerbg: #f1f5f9;
   --color-apptext: #1c1c1c;
-  --color-mutedtext: #64748b;
+  --color-mutedtext: #526077;
   --color-appborder: #cbd5e1;
   --color-mutedborder: #e2e8f0;
-  --color-accent: #25aeba;
-  --color-accent-hover: #1e8f9b;
+  --color-accent: #0c6f78;
+  --color-accent-hover: #0b626a;
 }
 
 .dark {

@@ -40,7 +40,7 @@ function CustomPluginTab() {
   return (
     <div className="p-4 space-y-3">
       <div className="p-3 bg-headerbg border border-appborder rounded-lg">
-        <span className="block text-[10px] font-extrabold text-[#25aeba] uppercase tracking-wider mb-1">Custom Plugin Tab</span>
+        <span className="block text-[10px] font-extrabold text-[#0e7c86] uppercase tracking-wider mb-1">Custom Plugin Tab</span>
         <p className="text-xs text-mutedtext leading-relaxed font-light">
           This tab is injected dynamically as a plugin via the composed API!
         </p>
@@ -61,7 +61,7 @@ function CustomPluginTab() {
 const customPluginTab = {
   id: "custom-plugin",
   label: "Custom",
-  icon: <Sparkles className="w-3.5 h-3.5 text-[#25aeba]" />,
+  icon: <Sparkles className="w-3.5 h-3.5 text-[#0e7c86]" />,
   content: CustomPluginTab,
 };
 
