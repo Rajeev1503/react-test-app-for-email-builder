@@ -7,7 +7,7 @@ import { builtinBlocks, defineBlock, type BlockDefinition } from "@react-email-b
  * Fixed documents for testing, chosen with `?scenario=<name>`. Everything here
  * uses the packages' public API only, so this also checks that API is enough.
  */
-export const SCENARIOS = ["blocks", "columns", "custom", "empty", "large", "malicious", "corrupt"] as const;
+export const SCENARIOS = ["blocks", "rich", "columns", "custom", "empty", "large", "malicious", "corrupt"] as const;
 export type ScenarioName = (typeof SCENARIOS)[number];
 
 export interface LabConfig {
@@ -136,6 +136,12 @@ export function loadScenario(name: ScenarioName | null): LoadedScenario {
   switch (name) {
     case "blocks":
       return { document: allBlocksDocument() };
+    case "rich":
+      return {
+        document: buildDocument([[[
+          ...["menu", "social", "list", "quote", "table", "video", "footer", "html"].map((type) => blockFromDefaults(type)),
+        ]]]),
+      };
     case "columns": {
       const image = (alt: string) => blockFromDefaults("image", { props: { src: hostedImage(window.location.origin), alt } });
       return {
