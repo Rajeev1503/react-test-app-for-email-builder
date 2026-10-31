@@ -15,7 +15,7 @@ test("every ready-made block renders on the canvas and in the export", async ({ 
 
   // Tables fill their column in both, which a CSS reset once broke on the canvas.
   const widthRatio = async (root: ReturnType<typeof canvas>) => {
-    const table = await root.getByRole("cell", { name: "Monthly plan" }).locator("xpath=ancestor::table[1]").boundingBox();
+    const table = await root.locator("td", { hasText: "Monthly plan" }).locator("xpath=ancestor::table[1]").boundingBox();
     return table!.width;
   };
   expect(await widthRatio(canvas(page))).toBeGreaterThan(300);
