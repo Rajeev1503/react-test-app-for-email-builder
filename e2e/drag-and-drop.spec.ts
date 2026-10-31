@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { canvas, exportFrame, openLab, snap } from "./helpers";
+import { exportFrame, openLab, snap } from "./helpers";
 
 type Doc = { rootId: string; nodes: Record<string, { type: string; parentId: string | null; children: string[]; data: { blockType?: string; props?: Record<string, unknown> } }> };
 

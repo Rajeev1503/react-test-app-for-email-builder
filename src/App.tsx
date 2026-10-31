@@ -21,6 +21,7 @@ import { templateManifest } from "@react-email-builder/templates";
 import { NavBar } from "./NavBar";
 import { readLabConfig, loadScenario } from "./lab/scenarios";
 import { createLabProvider } from "./lab/fakeAi";
+import { labAssets } from "./lab/assets";
 import { ExportPane, LabBridge } from "./lab/LabTools";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import "@react-email-builder/react/styles.css";
@@ -114,6 +115,7 @@ function App() {
       defaultTheme="light"
       initialDocument={scenario.document}
       blocks={scenario.blocks}
+      assets={labAssets}
     >
       <AgentPlugin
         inlineNodeAI={true}
