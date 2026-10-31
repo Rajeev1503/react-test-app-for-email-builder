@@ -7,14 +7,16 @@ export function LabBridge() {
   const document = useEngineStore((s) => s.document);
   const exportHtml = useExportHtml();
   const setSelectedNodeId = useEngineStore((s) => s.setSelectedNodeId);
+  const undo = useEngineStore((s) => s.undo);
 
   useEffect(() => {
     window.__lab = {
       document: () => serialize(document),
       exportHtml: () => exportHtml(document),
       select: setSelectedNodeId,
+      undo,
     };
-  }, [document, exportHtml, setSelectedNodeId]);
+  }, [document, exportHtml, setSelectedNodeId, undo]);
 
   return null;
 }

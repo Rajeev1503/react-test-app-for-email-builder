@@ -74,8 +74,16 @@ test("layout nodes can be styled, and padding works in the export", async ({ pag
   };
 
   await expect(exportFrame(page).getByRole("heading", { name: "Lab heading" })).toBeVisible();
-  await expect.poll(() => headingTop("export")).toBeGreaterThan(40);
-  expect(Math.abs((await headingTop("canvas")) - (await headingTop("export")))).toBeLessThan(6);
+  // The export pane reloads as edits land, so measure again until it settles.
+  const difference = async () => {
+    try {
+      const exported = await headingTop("export");
+      return exported > 40 ? Math.abs((await headingTop("canvas")) - exported) : Infinity;
+    } catch {
+      return Infinity;
+    }
+  };
+  await expect.poll(difference).toBeLessThan(6);
 
   await snap(page, "styling-section");
 });

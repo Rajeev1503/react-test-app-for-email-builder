@@ -19,7 +19,8 @@ export async function openLab(page: Page, options: LabOptions = {}) {
 
 export const exportFrame = (page: Page): FrameLocator => page.frameLocator('[data-testid="export-frame"]');
 
-export const canvas = (page: Page) => page.getByTestId("canvas-scroll");
+/** The email on the canvas, which renders in an isolated iframe. */
+export const canvas = (page: Page) => page.frameLocator('[data-reb-part="frame"]');
 
 /** Screenshots are kept with the test results for visual review. */
 export async function snap(page: Page, name: string) {

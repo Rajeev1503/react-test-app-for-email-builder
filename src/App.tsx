@@ -2,19 +2,19 @@ import "./App.css";
 import { useMemo, useState } from "react";
 import {
   InspectorPanel,
+  EmailCanvas,
   EmailProvider,
-  Canvas,
   templatesTabWith,
   useInspectorContext,
-  useEngineStore,
+  useSaveStatus,
 } from "@react-email-builder/react";
+import { serialize } from "@react-email-builder/core";
 // The AI and history surfaces ship from their own entry points, so an editor
 // that wants neither carries neither the model provider nor IndexedDB.
 import { ChatPanel, AgentPlugin, aiCanvasPlugin } from "@react-email-builder/react/ai";
 import { HistoryPlugin, historyTab } from "@react-email-builder/react/history";
-// Drag-and-drop: opt-in subpath export so the dnd-kit graph stays out of
-// editors that don't need it.
-import { DndProvider, DndNodeChrome, dndCanvasPlugin } from "@react-email-builder/react/dnd";
+// Drag and drop ships from its own entry point too.
+import { DndProvider, dndCanvasPlugin } from "@react-email-builder/react/dnd";
 // The starter templates are their own package now — 1793 lines of document data
 // that used to be unconditional bundle weight.
 import { templateManifest } from "@react-email-builder/templates";
@@ -66,46 +66,36 @@ const customPluginTab = {
 /** The Templates tab, preloaded with the starters from the templates package. */
 const templatesTab = templatesTabWith(templateManifest);
 
-const DEVICE_MAX_WIDTH = { mobile: "375px", tablet: "600px", desktop: "600px" } as const;
-
 const allOverlays = [...aiCanvasPlugin.overlays, ...dndCanvasPlugin.overlays];
 
-function DndEmailCanvas({
+const SAVE_LABELS = {
+  idle: "",
+  unsaved: "Unsaved changes",
+  saving: "Saving…",
+  saved: "Saved",
+  error: "Could not save",
+};
+
+/** Saves a draft on every change, to show the save status working for real. */
+function SavingCanvas({
   isPreviewMode,
-  deviceSize = "desktop",
+  deviceSize,
 }: {
   isPreviewMode: boolean;
-  deviceSize?: "mobile" | "tablet" | "desktop";
+  deviceSize: "mobile" | "tablet" | "desktop";
 }) {
-  const bodyBg = useEngineStore((s) => {
-    const root = s.document.nodes.get(s.document.rootId);
-    const bodyId = root?.children?.[0];
-    const body = bodyId ? s.document.nodes.get(bodyId) : null;
-    return (body?.data as { styles?: { backgroundColor?: string } })?.styles?.backgroundColor;
+  const saveStatus = useSaveStatus((document) => {
+    localStorage.setItem("email-builder-draft", JSON.stringify(serialize(document)));
   });
-  const background = bodyBg || "#ffffff";
 
   return (
-    <Canvas.Root
-      preview={isPreviewMode}
-      device={deviceSize}
+    <EmailCanvas
+      isPreviewMode={isPreviewMode}
+      deviceSize={deviceSize}
       toolbarActions={aiCanvasPlugin.toolbarActions}
       overlays={allOverlays}
-    >
-      <div
-        style={{ backgroundColor: "var(--reb-bg-canvas)", display: "flex", justifyContent: "center", padding: "24px 16px", minHeight: "100%" }}
-      >
-        <div style={{ maxWidth: DEVICE_MAX_WIDTH[deviceSize], width: "100%", backgroundColor: background }}>
-          {/* Render tree directly (no iframe) so dnd-kit sensors can see pointer
-              events on the sortable nodes. The iframe isolates CSS but also
-              isolates DOM events, which breaks drag-and-drop. */}
-          <Canvas.Tree>
-            {(nodeId, depth) => <DndNodeChrome nodeId={nodeId} depth={depth} />}
-          </Canvas.Tree>
-        </div>
-      </div>
-      <Canvas.Overlays />
-    </Canvas.Root>
+      status={SAVE_LABELS[saveStatus]}
+    />
   );
 }
 
@@ -177,8 +167,8 @@ function App() {
             )}
             <div className="flex-1 min-h-0 flex">
               <div className="flex-1 min-w-0 relative">
-                <div className="absolute inset-0 overflow-y-auto" data-testid="canvas-scroll">
-                  <DndEmailCanvas isPreviewMode={isPreviewMode} deviceSize={deviceSize} />
+                <div className="absolute inset-0" data-testid="canvas-scroll">
+                  <SavingCanvas isPreviewMode={isPreviewMode} deviceSize={deviceSize} />
                 </div>
               </div>
               {lab.showExport && <div className="flex-1 min-w-0"><ExportPane /></div>}

@@ -7,7 +7,7 @@ export type RenderNodeTypeData<T extends TNodeType> = Extract<
 
 declare global {
   interface Window {
-    __lab?: { document(): unknown; exportHtml(): Promise<string>; select(id: string | null): void };
+    __lab?: { document(): unknown; exportHtml(): Promise<string>; select(id: string | null): void; undo(): void };
     __xssFired?: boolean;
   }
 }
