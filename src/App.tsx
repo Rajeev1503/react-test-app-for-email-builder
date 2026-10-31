@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   InspectorPanel,
   EmailProvider,
@@ -19,6 +19,9 @@ import { DndProvider, DndNodeChrome, dndCanvasPlugin } from "@react-email-builde
 // that used to be unconditional bundle weight.
 import { templateManifest } from "@react-email-builder/templates";
 import { NavBar } from "./NavBar";
+import { readLabConfig, loadScenario } from "./lab/scenarios";
+import { createLabProvider } from "./lab/fakeAi";
+import { ExportPane, LabBridge } from "./lab/LabTools";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import "@react-email-builder/react/styles.css";
 
@@ -106,7 +109,11 @@ function DndEmailCanvas({
   );
 }
 
+const lab = readLabConfig(window.location.search);
+const scenario = loadScenario(lab.scenario);
+
 function App() {
+  const labProvider = useMemo(() => (lab.ai === "fake" ? createLabProvider() : undefined), []);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [deviceSize, setDeviceSize] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [leftOpen, setLeftOpen] = useState(true);
@@ -115,9 +122,18 @@ function App() {
   return (
     <EmailProvider
       defaultTheme="light"
+      initialDocument={scenario.document}
+      blocks={scenario.blocks}
     >
-      <AgentPlugin inlineNodeAI={true} geminiApiKey={import.meta.env.VITE_GEMINI_API_KEY} geminiModel="gemini-2.5-flash-lite" />
-      <HistoryPlugin />
+      <AgentPlugin
+        inlineNodeAI={true}
+        provider={labProvider}
+        geminiApiKey={lab.ai === "gemini" ? import.meta.env.VITE_GEMINI_API_KEY : undefined}
+        geminiModel="gemini-2.5-flash-lite"
+      />
+      {/* History restores the last saved email on load, which would replace a scenario. */}
+      {!lab.scenario && <HistoryPlugin />}
+      <LabBridge />
       <DndProvider>
         <div className="flex h-screen w-full relative overflow-hidden bg-appbg text-apptext">
 
@@ -154,10 +170,18 @@ function App() {
               setDeviceSize={setDeviceSize}
             />
             {/* Canvas area: relative wrapper + absolutely positioned scrollable canvas */}
-            <div className="flex-1 min-h-0 relative">
-              <div className="absolute inset-0 overflow-y-auto">
-                <DndEmailCanvas isPreviewMode={isPreviewMode} deviceSize={deviceSize} />
+            {scenario.error && (
+              <p role="alert" data-testid="scenario-error" className="px-3 py-2 text-xs bg-red-50 text-red-700 border-b border-red-200">
+                Could not load this email: {scenario.error}
+              </p>
+            )}
+            <div className="flex-1 min-h-0 flex">
+              <div className="flex-1 min-w-0 relative">
+                <div className="absolute inset-0 overflow-y-auto" data-testid="canvas-scroll">
+                  <DndEmailCanvas isPreviewMode={isPreviewMode} deviceSize={deviceSize} />
+                </div>
               </div>
+              {lab.showExport && <div className="flex-1 min-w-0"><ExportPane /></div>}
             </div>
           </div>
 

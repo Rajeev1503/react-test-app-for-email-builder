@@ -7,18 +7,19 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
+    "@dnd-kit/accessibility": "^3.1.1",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/accessibility": "^3.1.1",
-    "@react-email/components": "^1.0.2",
+    "@google/generative-ai": "^0.24.1",
     "@react-email-builder/core": "../react-email-builder/packages/core",
     "@react-email-builder/engine": "../react-email-builder/packages/engine",
     "@react-email-builder/react": "../react-email-builder/packages/react",
     "@react-email-builder/templates": "../react-email-builder/packages/templates",
+    "@react-email/components": "^1.0.2",
     "@tailwindcss/vite": "^4.1.18",
     "lucide-react": "^1.9.0",
     "react": "^19.2.0",
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.64.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
