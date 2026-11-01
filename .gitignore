@@ -26,7 +26,4 @@ dist-ssr
 *.sln
 *.sw?
 
-#playwright
-test-results
-playwright-report
 .lab-uploads

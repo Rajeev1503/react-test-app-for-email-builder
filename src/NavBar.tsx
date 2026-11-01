@@ -2,7 +2,7 @@ import { exportHtml, exportPlainText, useEngineStore, useTheme } from "@react-em
 // History persistence ships from its own entry point.
 import { useTemplateHistory } from "@react-email-builder/react/history";
 import { Eye, EyeOff, Sun, Moon, Monitor, Tablet, Smartphone, Clipboard, Check, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 
 export const NavBar = ({
@@ -10,7 +10,9 @@ export const NavBar = ({
   setIsPreviewMode,
   deviceSize,
   setDeviceSize,
+  panelToggles,
 }: {
+  panelToggles: ReactNode;
   isPreviewMode: boolean;
   setIsPreviewMode: (val: boolean) => void;
   deviceSize: "mobile" | "tablet" | "desktop";
@@ -170,6 +172,7 @@ export const NavBar = ({
             No Selection
           </span>
         )}
+        {panelToggles}
       </div>
     </div>
   );

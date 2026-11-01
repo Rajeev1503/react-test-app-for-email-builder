@@ -1,27 +1,5 @@
 import { useEffect, useState } from "react";
-import { serialize } from "@react-email-builder/core";
-import { exportPlainText, useEngineStore, useExportHtml } from "@react-email-builder/react";
-
-/** Lets Playwright read the document and the real export. */
-export function LabBridge() {
-  const document = useEngineStore((s) => s.document);
-  const exportHtml = useExportHtml();
-  const setSelectedNodeId = useEngineStore((s) => s.setSelectedNodeId);
-  const undo = useEngineStore((s) => s.undo);
-
-  useEffect(() => {
-    window.__lab = {
-      document: () => serialize(document),
-      exportHtml: () => exportHtml(document),
-      select: setSelectedNodeId,
-      undo,
-      exportFor: (mergeSyntax, mergeData) => exportHtml(document, { mergeSyntax, mergeData }),
-      plainText: () => exportPlainText(document),
-    };
-  }, [document, exportHtml, setSelectedNodeId, undo]);
-
-  return null;
-}
+import { useEngineStore, useExportHtml } from "@react-email-builder/react";
 
 /** The real exported HTML beside the canvas, so any difference is easy to see. */
 export function ExportPane() {

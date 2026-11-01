@@ -60,7 +60,7 @@ export default defineConfig({
     labUploads(),
   ],
   server: {
-    watch: { ignored: ["**/.lab-uploads/**", "**/test-results/**", "**/playwright-report/**"] },
+    watch: { ignored: ["**/.lab-uploads/**"] },
   },
   resolve: {
     dedupe: ["react", "react-dom", "zustand"],
