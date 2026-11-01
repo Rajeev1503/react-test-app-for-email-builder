@@ -123,7 +123,7 @@ function App() {
   const { panels, toggle, widths, resize } = useEditorPanels();
 
   const panelToggles = (
-    <PanelToggles panels={panels} onToggle={toggle} disabled={isPreviewMode ? ["bar"] : undefined} labels={{ ai: "Inkling" }} />
+    <PanelToggles panels={panels} onToggle={toggle} disabled={isPreviewMode ? ["bar"] : undefined} labels={{ ai: "Envoy" }} />
   );
 
   return (
