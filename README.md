@@ -16,3 +16,7 @@ pnpm dev    # the editor
 | `?aiDelay=150` | Makes the scripted model slow, for testing Stop |
 
 Without `?ai=fake`, the AI uses the Gemini key in `.env`, which costs money.
+
+## License
+
+[MIT](LICENSE)
