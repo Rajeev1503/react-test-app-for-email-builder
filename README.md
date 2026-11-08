@@ -11,7 +11,7 @@ pnpm dev    # the editor
 | Option | Effect |
 |---|---|
 | `?scenario=blocks` | Loads a fixture: `blocks`, `rich`, `columns`, `custom`, `empty`, `large`, `clipped`, `malicious` or `corrupt` |
-| `?export=1` | Shows the real exported HTML beside the canvas, or the email as Outlook and Gmail would show it |
+| `?export=1` | Shows the real exported HTML beside the canvas, the email as Outlook and Gmail would show it, or its inbox score |
 | `?ai=fake` | Uses a scripted model, which is repeatable and free |
 | `?aiDelay=150` | Makes the scripted model slow, for testing Stop |
 
