@@ -7,7 +7,7 @@ import { builtinBlocks, defineBlock, type BlockDefinition } from "@react-email-b
  * Fixed documents for testing, chosen with `?scenario=<name>`. Everything here
  * uses the packages' public API only, so this also checks that API is enough.
  */
-export const SCENARIOS = ["blocks", "rich", "columns", "custom", "empty", "large", "malicious", "corrupt"] as const;
+export const SCENARIOS = ["blocks", "rich", "columns", "custom", "empty", "large", "clipped", "malicious", "corrupt"] as const;
 export type ScenarioName = (typeof SCENARIOS)[number];
 
 export interface LabConfig {
@@ -126,6 +126,16 @@ function largeDocument(): EmailDocument {
 }
 
 export interface LoadedScenario {
+/** Past the 102KB Gmail clips at, so the size meter in the editor bar turns red. */
+function clippedDocument(): EmailDocument {
+  const paragraph = "This paragraph is here to make the email long enough for Gmail to clip it. ".repeat(4);
+  const sections = Array.from({ length: 160 }, (_, i) => [
+    [blockFromDefaults("heading", { props: { content: `Section ${i}`, level: 2 } })],
+    [blockFromDefaults("text", { props: { content: paragraph } })],
+  ]);
+  return buildDocument(sections);
+}
+
   document?: EmailDocument;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   blocks?: BlockDefinition<any, any>[];
@@ -165,6 +175,8 @@ export function loadScenario(name: ScenarioName | null): LoadedScenario {
     case "large":
       return { document: largeDocument() };
     case "malicious":
+    case "clipped":
+      return { document: clippedDocument() };
       // Deliberately not through importTemplate: this has to prove the renderers
       // are safe on their own, for content that arrives by any other route.
       return { document: maliciousDocument() };

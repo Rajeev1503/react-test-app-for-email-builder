@@ -10,7 +10,7 @@ pnpm dev    # the editor
 
 | Option | Effect |
 |---|---|
-| `?scenario=blocks` | Loads a fixture: `blocks`, `rich`, `columns`, `custom`, `empty`, `large`, `malicious` or `corrupt` |
+| `?scenario=blocks` | Loads a fixture: `blocks`, `rich`, `columns`, `custom`, `empty`, `large`, `clipped`, `malicious` or `corrupt` |
 | `?export=1` | Shows the real exported HTML beside the canvas |
 | `?ai=fake` | Uses a scripted model, which is repeatable and free |
 | `?aiDelay=150` | Makes the scripted model slow, for testing Stop |
