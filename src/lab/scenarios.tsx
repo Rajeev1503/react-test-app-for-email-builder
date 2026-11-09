@@ -12,7 +12,8 @@ export type ScenarioName = (typeof SCENARIOS)[number];
 
 export interface LabConfig {
   scenario: ScenarioName | null;
-  ai: "fake" | "gemini";
+  /** `fake` is the scripted model; `live` uses the model in `.env`, or one added in the panel. */
+  ai: "fake" | "live";
   showExport: boolean;
 }
 
@@ -21,7 +22,7 @@ export function readLabConfig(search: string): LabConfig {
   const scenario = params.get("scenario") as ScenarioName | null;
   return {
     scenario: scenario && SCENARIOS.includes(scenario) ? scenario : null,
-    ai: params.get("ai") === "fake" ? "fake" : "gemini",
+    ai: params.get("ai") === "fake" ? "fake" : "live",
     showExport: params.get("export") === "1",
   };
 }
@@ -125,7 +126,6 @@ function largeDocument(): EmailDocument {
   return buildDocument(sections);
 }
 
-export interface LoadedScenario {
 /** Past the 102KB Gmail clips at, so the size meter in the editor bar turns red. */
 function clippedDocument(): EmailDocument {
   const paragraph = "This paragraph is here to make the email long enough for Gmail to clip it. ".repeat(4);
@@ -136,6 +136,7 @@ function clippedDocument(): EmailDocument {
   return buildDocument(sections);
 }
 
+export interface LoadedScenario {
   document?: EmailDocument;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   blocks?: BlockDefinition<any, any>[];
@@ -174,9 +175,9 @@ export function loadScenario(name: ScenarioName | null): LoadedScenario {
       return { document: createInitialDocument() };
     case "large":
       return { document: largeDocument() };
-    case "malicious":
     case "clipped":
       return { document: clippedDocument() };
+    case "malicious":
       // Deliberately not through importTemplate: this has to prove the renderers
       // are safe on their own, for content that arrives by any other route.
       return { document: maliciousDocument() };

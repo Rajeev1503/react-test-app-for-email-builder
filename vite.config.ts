@@ -34,6 +34,24 @@ function labUploads(): Plugin {
         res.setHeader("content-type", types[extname(file).toLowerCase()] ?? "application/octet-stream");
         res.end(readFileSync(file));
       });
+      // Fetches a page for the AI, as a host's server would: browsers can't fetch other sites.
+      server.middlewares.use("/__lab/page", async (req, res) => {
+        const target = new URL(req.url ?? "", "http://localhost").searchParams.get("url") ?? "";
+        if (!/^https?:\/\//i.test(target)) {
+          res.statusCode = 400;
+          res.end("Only http and https links can be read.");
+          return;
+        }
+        try {
+          const response = await fetch(target, { signal: AbortSignal.timeout(10_000), headers: { "user-agent": "react-email-builder-lab" } });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          res.setHeader("content-type", "text/html; charset=utf-8");
+          res.end((await response.text()).slice(0, 2_000_000));
+        } catch (error) {
+          res.statusCode = 502;
+          res.end(error instanceof Error ? error.message : "It couldn't be fetched.");
+        }
+      });
       server.middlewares.use("/__lab/uploads", (req, res) => {
         mkdirSync(UPLOAD_DIR, { recursive: true });
         const assets = readdirSync(UPLOAD_DIR).map((file) => ({

@@ -15,7 +15,7 @@ pnpm dev    # the editor
 | `?ai=fake` | Uses a scripted model, which is repeatable and free |
 | `?aiDelay=150` | Makes the scripted model slow, for testing Stop |
 
-Without `?ai=fake`, the AI uses the Gemini key in `.env`, which costs money.
+Without `?ai=fake`, the AI uses the model set in `.env` (see `.env.example`; any listed service works), or one you add in the AI settings panel. Either costs money.
 
 ## License
 

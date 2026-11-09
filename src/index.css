@@ -2,25 +2,23 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-appbg: #ffffff;
-  --color-panelbg: #f8fafc;
-  --color-headerbg: #f1f5f9;
-  --color-apptext: #1c1c1c;
-  --color-mutedtext: #526077;
-  --color-appborder: #cbd5e1;
   --color-mutedborder: #e2e8f0;
-  --color-accent: #0c6f78;
-  --color-accent-hover: #0b626a;
 }
 
 .dark {
-  --color-appbg: #1c1c1c;
-  --color-panelbg: #121212;
-  --color-headerbg: #181818;
-  --color-apptext: #f3f4f6;
-  --color-mutedtext: #9ca3af;
-  --color-appborder: #2d2d2d;
   --color-mutedborder: #1a1a1a;
+}
+
+/* Inline, so these read the editor's theme where they are used: light, dark and the brand palette. */
+@theme inline {
+  --color-appbg: var(--reb-bg-app, #ffffff);
+  --color-panelbg: var(--reb-bg-panel, #f8fafc);
+  --color-headerbg: var(--reb-bg-header, #f1f5f9);
+  --color-apptext: var(--reb-text-primary, #1c1c1c);
+  --color-mutedtext: var(--reb-text-muted, #526077);
+  --color-appborder: var(--reb-border-color, #cbd5e1);
+  --color-accent: var(--reb-accent-color, #0c6f78);
+  --color-accent-hover: var(--reb-accent-hover, #0b626a);
 }
 
 @source "../../react-email-builder/packages/react/src";
@@ -33,6 +31,11 @@
 }
 
 :root {
+  /* The editor and Tailwind size in rem, so this one value makes the whole UI
+     more compact. The email is in its own iframe document and keeps its size. */
+  font-size: 14px;
+  /* The top bar and the panel headers share this height. */
+  --reb-header-height: 39px;
   background-color: #ffffff;
   color: #1c1c1c;
   transition: background-color 0.2s ease, color 0.2s ease;

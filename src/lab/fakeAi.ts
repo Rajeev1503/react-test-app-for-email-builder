@@ -27,7 +27,7 @@ export function createLabProvider(search = window.location.search) {
   let prompt = "";
   let failuresLeft = 1;
 
-  return createFakeProvider({
+  const provider = createFakeProvider({
     delayMs: Number(new URLSearchParams(search).get("aiDelay") ?? 0),
 
     respond({ input, turnIndex, session }) {
@@ -40,6 +40,22 @@ export function createLabProvider(search = window.location.search) {
           throw new Error("The AI service returned an error (HTTP 429).");
         }
         return { text: "It worked this time." };
+      }
+
+      // Saves what it can read from the attachments, to check they reach the model.
+      if (prompt.includes("Build the brand profile")) {
+        const attached = [...prompt.matchAll(/<attachment name="([^"]+)"/g)].map((match) => match[1]);
+        if (turnIndex === 0) {
+          const fields: Record<string, unknown> = {};
+          const name = /name: ([^;\n]+)/.exec(prompt)?.[1];
+          const color = /(?:Main colors|Colors it uses most): (#[0-9a-f]{6})/.exec(prompt)?.[1];
+          const logo = /Uploaded to (\S+)/.exec(prompt)?.[1];
+          if (name) fields.name = name;
+          if (color) fields.primaryColor = color;
+          if (logo) fields.logoUrl = logo;
+          return { toolCalls: [call("updateBrandProfile", fields)] };
+        }
+        return { text: `Read ${attached.length} attachments: ${attached.join(", ")}.` };
       }
 
       // Scoped to the attached node.
@@ -78,4 +94,24 @@ export function createLabProvider(search = window.location.search) {
       return { text: "Added a hero section." };
     },
   });
+
+  // One-off answers, such as the AI inbox score. Scripted, so the lab shows a result without a model.
+  return {
+    ...provider,
+    async complete(systemPrompt: string) {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      if (systemPrompt.includes("Score how ready the email")) {
+        return JSON.stringify({
+          score: 76,
+          summary: "Clear and readable, but it has no subject or preheader and the main button sits close to a link.",
+          strengths: ["Short, scannable paragraphs", "Real text rather than text in images", "Strong button color contrast"],
+          problems: [
+            { issue: "There is no subject line.", fix: "Add a subject that says what the email is about, under 40 characters." },
+            { issue: "The button and the link below it are crowded together.", fix: "Add space between them so each is easy to tap." },
+          ],
+        });
+      }
+      return "Summary of the earlier chat.";
+    },
+  };
 }

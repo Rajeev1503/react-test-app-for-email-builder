@@ -1,11 +1,13 @@
 import "./App.css";
 import { useMemo, useState } from "react";
+import { useMediaQuery } from "./useMediaQuery";
 import {
   InspectorPanel,
   EmailCanvas,
   EmailProvider,
   PanelResizeHandle,
   PanelToggles,
+  animateChange,
   templatesTabWith,
   useEditorPanels,
   useInspectorContext,
@@ -14,7 +16,7 @@ import {
 import { serialize } from "@react-email-builder/core";
 // The AI and history surfaces ship from their own entry points, so an editor
 // that wants neither carries neither the model provider nor IndexedDB.
-import { ChatPanel, AgentPlugin, aiCanvasPlugin } from "@react-email-builder/react/ai";
+import { ChatPanel, AgentPlugin, AiInboxScore, aiCanvasPlugin, createBrowserProvider } from "@react-email-builder/react/ai";
 import { HistoryPlugin, historyTab } from "@react-email-builder/react/history";
 // Drag and drop ships from its own entry point too.
 import { DndProvider, dndCanvasPlugin } from "@react-email-builder/react/dnd";
@@ -22,12 +24,15 @@ import { DndProvider, dndCanvasPlugin } from "@react-email-builder/react/dnd";
 // that used to be unconditional bundle weight.
 import { templateManifest } from "@react-email-builder/templates";
 import { RichTextProvider } from "@react-email-builder/react/rich-text";
+import type { DeviceSize } from "@react-email-builder/react/toolbar";
 import { NavBar } from "./NavBar";
 import { readLabConfig, loadScenario } from "./lab/scenarios";
 import { createLabProvider } from "./lab/fakeAi";
 import { labAssets } from "./lab/assets";
+import { labReadPage } from "./lab/readPage";
 import { ExportPane } from "./lab/LabTools";
-import { Sparkles } from "lucide-react";
+import { Gauge, Sparkles } from "lucide-react";
+import { InboxReport } from "@react-email-builder/react/inbox";
 import "@react-email-builder/react/styles.css";
 
 /**
@@ -37,6 +42,22 @@ import "@react-email-builder/react/styles.css";
  * runs its own hooks and re-renders on its own, instead of re-rendering every
  * time the panel does.
  */
+
+/**
+ * The model from `.env`, if one is set up: any service the settings panel lists.
+ * Development only, as the key ends up in the page.
+ */
+function envProvider() {
+  const env = import.meta.env;
+  if (!env.VITE_AI_SERVICE || !env.VITE_AI_MODEL) return undefined;
+  return createBrowserProvider({
+    service: env.VITE_AI_SERVICE,
+    model: env.VITE_AI_MODEL,
+    apiKey: env.VITE_AI_API_KEY,
+    baseUrl: env.VITE_AI_BASE_URL || undefined,
+  });
+}
+
 function CustomPluginTab() {
   const { nodeId, node } = useInspectorContext();
 
@@ -60,6 +81,15 @@ function CustomPluginTab() {
     </div>
   );
 }
+
+/** The inbox score, as an inspector tab: a list fits the panel's width. */
+const inboxScoreTab = {
+  id: "inbox-score",
+  label: "Inbox score",
+  icon: <Gauge />,
+  order: 39,
+  content: () => <InboxReport secondOpinion={<AiInboxScore />} />,
+};
 
 const customPluginTab = {
   id: "custom-plugin",
@@ -92,10 +122,12 @@ function SavingCanvas({
   isPreviewMode,
   deviceSize,
   showEditorBar,
+  deviceToolbar,
 }: {
   isPreviewMode: boolean;
   deviceSize: "mobile" | "tablet" | "desktop";
   showEditorBar: boolean;
+  deviceToolbar: boolean;
 }) {
   const saveStatus = useSaveStatus((document) => {
     localStorage.setItem("email-builder-draft", JSON.stringify(serialize(document)));
@@ -109,6 +141,7 @@ function SavingCanvas({
       overlays={allOverlays}
       status={SAVE_LABELS[saveStatus]}
       showEditorBar={showEditorBar}
+      deviceToolbar={deviceToolbar}
     />
   );
 }
@@ -117,14 +150,36 @@ const lab = readLabConfig(window.location.search);
 const scenario = loadScenario(lab.scenario);
 
 function App() {
-  const labProvider = useMemo(() => (lab.ai === "fake" ? createLabProvider() : undefined), []);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const [deviceSize, setDeviceSize] = useState<"mobile" | "tablet" | "desktop">("desktop");
+  const labProvider = useMemo(() => (lab.ai === "fake" ? createLabProvider() : envProvider()), []);
+  const [deviceSize, setDeviceSize] = useState<DeviceSize>("desktop");
   const { panels, toggle, widths, resize } = useEditorPanels();
+  // The preview takes the canvas's place: the exported email, email clients and the inbox score.
+  const [showPreview, setShowPreview] = useState(lab.showExport);
+  const [deviceToolbar, setDeviceToolbar] = useState(false);
+  // Too narrow for side panels beside the canvas: they become drawers over it, one at a time.
+  const compact = useMediaQuery("(max-width: 1023px)");
+  const [drawer, setDrawer] = useState<"ai" | "inspector" | null>(null);
+  const closeDrawer = () => animateChange(() => setDrawer(null));
 
+  // The drawers keep their own open state, so the saved desktop layout is left as it was.
+  const shown = compact ? { ...panels, header: true, ai: drawer === "ai", inspector: drawer === "inspector" } : panels;
+  const onToggle = (id: keyof typeof panels) => {
+    if (compact && (id === "ai" || id === "inspector")) setDrawer((open) => (open === id ? null : id));
+    else toggle(id);
+  };
   const panelToggles = (
-    <PanelToggles panels={panels} onToggle={toggle} disabled={isPreviewMode ? ["bar"] : undefined} labels={{ ai: "Envoy" }} />
+    <PanelToggles panels={shown} onToggle={onToggle} labels={{ ai: "Envoy" }} disabled={compact ? ["header"] : undefined} />
   );
+  const sidePanel = (side: "left" | "right", open: boolean) =>
+    compact
+      ? `absolute inset-y-0 ${side === "left" ? "left-0 border-r" : "right-0 border-l"} z-40 w-[min(340px,88vw)] border-appborder flex flex-col bg-panelbg overflow-hidden shadow-2xl transition-transform duration-300 ${
+          open ? "translate-x-0" : `${side === "left" ? "-translate-x-full" : "translate-x-full"} invisible`
+        }`
+      : `transition-all duration-300 ${side === "left" ? "border-r" : "border-l"} border-appborder flex flex-col bg-panelbg overflow-hidden h-full ${
+          open ? "min-w-[200px] w-[320px] md:w-1/4" : `w-0 ${side === "left" ? "border-r-0" : "border-l-0"} invisible`
+        }`;
+  // A saved width applies beside the canvas, not to a drawer.
+  const sideWidth = (open: boolean, width: number | null) => (!compact && open && width !== null ? { width } : undefined);
 
   return (
     <EmailProvider
@@ -133,75 +188,82 @@ function App() {
       blocks={scenario.blocks}
       assets={labAssets}
       mergeTags={LAB_MERGE_TAGS}
+      readPage={labReadPage}
     >
       <AgentPlugin
         inlineNodeAI={true}
         allowCustomProviders
         provider={labProvider}
-        geminiApiKey={lab.ai === "gemini" ? import.meta.env.VITE_GEMINI_API_KEY : undefined}
-        geminiModel="gemini-2.5-flash-lite"
       />
       {/* History restores the last saved email on load, which would replace a scenario. */}
       {!lab.scenario && <HistoryPlugin />}
       <RichTextProvider>
       <DndProvider>
-        <div className="flex h-screen w-full relative overflow-hidden bg-appbg text-apptext">
+        <div className="flex flex-col h-screen w-full overflow-hidden bg-appbg text-apptext">
+          {/* Page header: the library's toolbar, across the whole page, above every panel. */}
+          {shown.header && (
+            <NavBar
+              compact={compact}
+              deviceSize={deviceSize}
+              setDeviceSize={setDeviceSize}
+              panelToggles={panelToggles}
+              previewOpen={showPreview}
+              onTogglePreview={() => animateChange(() => setShowPreview((open) => !open))}
+              deviceToolbar={deviceToolbar}
+              onDeviceToolbarChange={(on) => animateChange(() => setDeviceToolbar(on))}
+            />
+          )}
+        <div className="flex flex-1 min-h-0 w-full relative overflow-hidden">
 
           {/* Left Pane: Chat UI */}
           {/* Hidden rather than unmounted, so a running AI turn and the chat survive. */}
-          <div
-            className={`transition-all duration-300 border-r border-appborder flex flex-col bg-panelbg overflow-hidden h-full ${panels.ai ? "min-w-[240px] w-[320px] md:w-1/4" : "w-0 border-r-0 invisible"}`}
-            style={panels.ai && widths.ai !== null ? { width: widths.ai } : undefined}
-          >
-            <ChatPanel onFocusRequest={() => { if (!panels.ai) toggle("ai"); }} />
+          <div className={sidePanel("left", shown.ai)} style={sideWidth(shown.ai, widths.ai)} data-testid="left-panel" inert={!shown.ai}>
+            <ChatPanel
+              onFocusRequest={() => { if (!shown.ai) onToggle("ai"); }}
+              onClose={compact ? closeDrawer : undefined}
+            />
           </div>
-          {panels.ai && (
-            <PanelResizeHandle side="left" label="Resize AI assistant" width={widths.ai} onResize={(width) => resize("ai", width)} />
+          {!compact && panels.ai && (
+            <PanelResizeHandle side="left" label="Resize AI assistant" width={widths.ai} onResize={(width) => resize("ai", width)} onCollapse={() => animateChange(() => toggle("ai"))} />
           )}
 
           {/* Middle Pane: Builder Canvas */}
-          <div className="flex-1 min-w-[360px] flex flex-col h-full overflow-hidden relative">
-            {panels.header ? (
-              <NavBar
-                isPreviewMode={isPreviewMode}
-                setIsPreviewMode={setIsPreviewMode}
-                deviceSize={deviceSize}
-                setDeviceSize={setDeviceSize}
-                panelToggles={panelToggles}
-              />
-            ) : (
-              <div className="absolute right-3 top-3 z-50 shadow-md">{panelToggles}</div>
-            )}
+          <div className={`flex-1 ${compact ? "min-w-0" : "min-w-[360px]"} flex flex-col h-full overflow-hidden relative`}>
+            {/* With the header hidden, the toggles stay on screen so it can come back. */}
+            {!shown.header && <div className="absolute right-3 top-3 z-50 shadow-md">{panelToggles}</div>}
             {/* Canvas area: relative wrapper + absolutely positioned scrollable canvas */}
             {scenario.error && (
               <p role="alert" data-testid="scenario-error" className="px-3 py-2 text-xs bg-red-50 text-red-700 border-b border-red-200">
                 Could not load this email: {scenario.error}
               </p>
             )}
-            <div className="flex-1 min-h-0 flex">
-              <div className="flex-1 min-w-0 relative">
-                <div className="absolute inset-0" data-testid="canvas-scroll">
-                  <SavingCanvas isPreviewMode={isPreviewMode} deviceSize={deviceSize} showEditorBar={panels.bar} />
-                </div>
+            {/* The preview takes the canvas's place. The canvas stays mounted, hidden,
+                so switching back loses nothing and saving carries on. */}
+            <div className="flex-1 min-h-0 relative">
+              <div className="absolute inset-0" data-testid="canvas-scroll" hidden={showPreview}>
+                <SavingCanvas isPreviewMode={false} deviceSize={deviceSize} showEditorBar={panels.bar} deviceToolbar={deviceToolbar} />
               </div>
-              {lab.showExport && <div className="flex-1 min-w-0"><ExportPane /></div>}
+              {showPreview && <div className="absolute inset-0"><ExportPane onClose={() => animateChange(() => setShowPreview(false))} /></div>}
             </div>
           </div>
 
           {/* Right Pane: Inspector Panel with Composable Tabs & Plugin API */}
-          {panels.inspector && (
-            <PanelResizeHandle side="right" label="Resize inspector" width={widths.inspector} onResize={(width) => resize("inspector", width)} />
+          {/* A drawer covers the canvas; tapping beside it closes it. */}
+          {compact && drawer && (
+            <div className="absolute inset-0 z-30 bg-black/30" onClick={closeDrawer} aria-hidden data-testid="drawer-backdrop" />
           )}
-          <div
-            className={`transition-all duration-300 border-l border-appborder flex flex-col bg-panelbg overflow-hidden h-full ${panels.inspector ? "min-w-[240px] w-[320px] md:w-1/4" : "w-0 border-l-0 invisible"}`}
-            style={panels.inspector && widths.inspector !== null ? { width: widths.inspector } : undefined}
-          >
+          {!compact && panels.inspector && (
+            <PanelResizeHandle side="right" label="Resize inspector" width={widths.inspector} onResize={(width) => resize("inspector", width)} onCollapse={() => animateChange(() => toggle("inspector"))} />
+          )}
+          <div className={sidePanel("right", shown.inspector)} style={sideWidth(shown.inspector, widths.inspector)} data-testid="right-panel" inert={!shown.inspector}>
             <InspectorPanel
-              tabs={["properties", "blocks", "layouts", "saved", "icons", "images", "outline"]}
-              customTabs={[historyTab, templatesTab, customPluginTab]}
+              onClose={compact ? closeDrawer : undefined}
+              tabs={["properties", "blocks", "layouts", "saved", "icons", "images", "brand", "outline"]}
+              customTabs={[historyTab, templatesTab, inboxScoreTab, customPluginTab]}
             />
           </div>
 
+        </div>
         </div>
       </DndProvider>
       </RichTextProvider>
