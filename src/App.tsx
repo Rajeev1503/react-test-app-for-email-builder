@@ -123,11 +123,13 @@ function SavingCanvas({
   deviceSize,
   showEditorBar,
   deviceToolbar,
+  zoom,
 }: {
   isPreviewMode: boolean;
   deviceSize: "mobile" | "tablet" | "desktop";
   showEditorBar: boolean;
   deviceToolbar: boolean;
+  zoom: number;
 }) {
   const saveStatus = useSaveStatus((document) => {
     localStorage.setItem("email-builder-draft", JSON.stringify(serialize(document)));
@@ -142,6 +144,7 @@ function SavingCanvas({
       status={SAVE_LABELS[saveStatus]}
       showEditorBar={showEditorBar}
       deviceToolbar={deviceToolbar}
+      zoom={zoom}
     />
   );
 }
@@ -156,6 +159,7 @@ function App() {
   // The preview takes the canvas's place: the exported email, email clients and the inbox score.
   const [showPreview, setShowPreview] = useState(lab.showExport);
   const [deviceToolbar, setDeviceToolbar] = useState(false);
+  const [zoom, setZoom] = useState(1);
   // Too narrow for side panels beside the canvas: they become drawers over it, one at a time.
   const compact = useMediaQuery("(max-width: 1023px)");
   const [drawer, setDrawer] = useState<"ai" | "inspector" | null>(null);
@@ -211,6 +215,8 @@ function App() {
               onTogglePreview={() => animateChange(() => setShowPreview((open) => !open))}
               deviceToolbar={deviceToolbar}
               onDeviceToolbarChange={(on) => animateChange(() => setDeviceToolbar(on))}
+              zoom={zoom}
+              onZoomChange={setZoom}
             />
           )}
         <div className="flex flex-1 min-h-0 w-full relative overflow-hidden">
@@ -241,7 +247,7 @@ function App() {
                 so switching back loses nothing and saving carries on. */}
             <div className="flex-1 min-h-0 relative">
               <div className="absolute inset-0" data-testid="canvas-scroll" hidden={showPreview}>
-                <SavingCanvas isPreviewMode={false} deviceSize={deviceSize} showEditorBar={panels.bar} deviceToolbar={deviceToolbar} />
+                <SavingCanvas isPreviewMode={false} deviceSize={deviceSize} showEditorBar={panels.bar} deviceToolbar={deviceToolbar} zoom={zoom} />
               </div>
               {showPreview && <div className="absolute inset-0"><ExportPane onClose={() => animateChange(() => setShowPreview(false))} /></div>}
             </div>

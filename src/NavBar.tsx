@@ -3,7 +3,7 @@ import { AiButton, useTheme } from "@react-email-builder/react";
 import { exportErrorPrompt } from "@react-email-builder/react/inbox";
 // History persistence ships from its own entry point.
 import { useTemplateHistory } from "@react-email-builder/react/history";
-import { Check, ChevronDown, Clipboard, Eye, Monitor, Moon, Palette, Smartphone, Sun, Tablet, Trash2, TriangleAlert, MonitorSmartphone, Menu, X } from "lucide-react";
+import { Check, ChevronDown, Clipboard, Eye, Monitor, Moon, Palette, Smartphone, Sun, Tablet, ZoomIn, ZoomOut, Trash2, TriangleAlert, MonitorSmartphone, Menu, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
@@ -260,6 +260,9 @@ interface NavBarProps {
   onDeviceToolbarChange: (on: boolean) => void;
   deviceSize: DeviceSize;
   setDeviceSize: (size: DeviceSize) => void;
+  /** How large the email looks on the canvas. 1 is 100%. */
+  zoom: number;
+  onZoomChange: (zoom: number) => void;
   /** A narrow screen: the controls move into a menu drawer, the panel toggles stay in the bar. */
   compact?: boolean;
 }
@@ -277,6 +280,26 @@ function DeviceSizes({ deviceSize, setDeviceSize }: Pick<NavBarProps, "deviceSiz
         <Smartphone className="w-3.5 h-3.5" />
       </Toolbar.DeviceButton>
     </Toolbar.DeviceGroup>
+  );
+}
+
+const zoomButton =
+  "px-1.5 flex items-center justify-center rounded transition-all cursor-pointer text-apptext hover:bg-panelbg hover:text-accent disabled:opacity-40 disabled:cursor-default disabled:hover:bg-transparent disabled:hover:text-apptext";
+
+function ZoomControls({ zoom, onZoomChange }: Pick<NavBarProps, "zoom" | "onZoomChange">) {
+  return (
+    <Toolbar.ZoomGroup value={zoom} onValueChange={onZoomChange} className="h-[28px] flex items-stretch gap-0.5 bg-appbg p-0.5 border border-appborder rounded">
+      <Toolbar.ZoomOut title="Zoom out" className={zoomButton}>
+        <ZoomOut className="w-3.5 h-3.5" />
+      </Toolbar.ZoomOut>
+      <Toolbar.ZoomReset
+        title="Reset zoom to 100%"
+        className="min-w-[3rem] px-1 flex items-center justify-center rounded transition-all cursor-pointer text-[11px] font-semibold tabular-nums text-apptext hover:bg-panelbg hover:text-accent data-[state=on]:text-accent"
+      />
+      <Toolbar.ZoomIn title="Zoom in" className={zoomButton}>
+        <ZoomIn className="w-3.5 h-3.5" />
+      </Toolbar.ZoomIn>
+    </Toolbar.ZoomGroup>
   );
 }
 
@@ -423,6 +446,7 @@ function NavDrawer({ open, onClose, ...props }: NavBarProps & { open: boolean; o
             {section("View")}
             <div className="flex flex-wrap items-center gap-1.5">
               <DeviceSizes deviceSize={props.deviceSize} setDeviceSize={props.setDeviceSize} />
+          <ZoomControls zoom={props.zoom} onZoomChange={props.onZoomChange} />
               <DeviceToolbarButton deviceToolbar={props.deviceToolbar} onDeviceToolbarChange={props.onDeviceToolbarChange} />
               <PreviewButton previewOpen={props.previewOpen} onTogglePreview={() => { props.onTogglePreview(); onClose(); }} />
             </div>
@@ -477,6 +501,7 @@ export function NavBar(props: NavBarProps) {
       ) : (
         <div className="ml-auto flex items-center gap-1.5 text-[11px] font-semibold">
           <DeviceSizes deviceSize={props.deviceSize} setDeviceSize={props.setDeviceSize} />
+          <ZoomControls zoom={props.zoom} onZoomChange={props.onZoomChange} />
           <DeviceToolbarButton deviceToolbar={props.deviceToolbar} onDeviceToolbarChange={props.onDeviceToolbarChange} />
           {divider}
           <PreviewButton previewOpen={props.previewOpen} onTogglePreview={props.onTogglePreview} />

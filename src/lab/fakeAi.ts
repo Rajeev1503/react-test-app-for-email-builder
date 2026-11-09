@@ -34,6 +34,19 @@ export function createLabProvider(search = window.location.search) {
       if (turnIndex === 0 && typeof input === "string") prompt = input;
       const target = /node with ID "([^"]+)"/.exec(session.systemPrompt)?.[1];
 
+      // Picks up a turn that didn't finish: the last turn's record is in its history.
+      if (prompt.startsWith("Continue where you left off")) {
+        const last = [...session.history].reverse().find((message) => message.role === "assistant")?.content ?? "";
+        const knew = /already in the email/.test(last) && /Steps:/.test(last);
+        return { text: knew ? "Picking up where I stopped: the hero is already in, so I'll finish the rest." : "Starting over." };
+      }
+
+      // Changes the email, then fails in a way waiting can't fix, so the turn ends partway.
+      if (prompt.includes("halfway")) {
+        if (turnIndex === 0) return { toolCalls: [call("insertSubtree", { parentId: "container", subtree: heroSection })] };
+        throw new Error("The model returned something unreadable.");
+      }
+
       if (prompt.includes("fail")) {
         if (failuresLeft > 0) {
           failuresLeft--;
